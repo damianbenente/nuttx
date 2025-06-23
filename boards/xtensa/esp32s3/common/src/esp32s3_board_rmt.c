@@ -33,7 +33,11 @@
 #include "xtensa.h"
 
 #include <nuttx/kmalloc.h>
+
+#ifdef CONFIG_RMTCHAR
 #include <nuttx/rmt/rmtchar.h>
+#endif
+
 #ifdef CONFIG_WS2812_NON_SPI_DRIVER
 #include <nuttx/leds/ws2812.h>
 
@@ -92,14 +96,14 @@ int board_rmt_rxinitialize(int ch, int pin)
   int ret;
 
   struct rmt_dev_s *rmt = esp_rmt_rx_init(ch, pin);
-
+#ifdef CONFIG_RMTCHAR
   ret = rmtchar_register(rmt);
   if (ret < 0)
     {
       rmterr("ERROR: rmtchar_register failed: %d\n", ret);
       return ret;
     }
-
+#endif
   return ret;
 }
 
@@ -132,14 +136,16 @@ int board_rmt_txinitialize(int ch, int pin)
       rmterr("ERROR: esp_rmt_tx_init failed\n");
       return -ENODEV;
     }
-
+  
+#ifdef CONFIG_RMTCHAR
   ret = rmtchar_register(rmt);
   if (ret < 0)
     {
       rmterr("ERROR: rmtchar_register failed: %d\n", ret);
       return ret;
     }
-
+#endif
+  
 #ifdef CONFIG_WS2812_NON_SPI_DRIVER
   led = esp_ws2812_setup("/dev/leds0", rmt, CONFIG_WS2812_LED_COUNT, false);
   if (led == NULL)
